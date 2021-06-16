@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   role: { type: mongoose.Schema.ObjectId, ref: "roles" },
-  active: { type: Boolean, defualt: true},
+  active: { type: Boolean, default: true},
   date: { type: Date, default: Date.now },
   profile: String,
 });

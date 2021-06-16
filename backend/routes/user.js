@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const User = require("../models/user");
 const Role = require("../models/role");
-
+const Auth = require("../middleware/auth");
 
 router.post("/register", async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.password)
@@ -34,8 +34,7 @@ router.post("/register", async (req, res) => {
     const result = await user.save();
     if (!result)
       return res.status(401).send("Error: User could not be registered.");
-    const jwtToken = user.generateJWT();
-    res.status(200).send({ jwtToken });
+    res.status(200).send("User registered successfully.");
   } catch (error) {
     return res.status(401).send("Error: User could not be registered.");
   }
@@ -53,7 +52,7 @@ router.get("/list/:name?", async (req, res) => {
   return res.status(200).send({ users });
 });
 
-router.put("/update", async (req, res) => {
+router.put("/update", Auth, async (req, res) => {
   if (
     !req.body.name ||
     !req.body.email ||
@@ -77,7 +76,7 @@ router.put("/update", async (req, res) => {
       password: hash,
       role: req.body.role,
       active: true,
-      profile: String,
+      profile: req.body.profile,
     },
     { new: true }
   );
@@ -88,11 +87,11 @@ router.put("/update", async (req, res) => {
     .send({ message: "User updated successfully.", data: user });
 });
 
-router.put("/delete", async (req, res) => {
+router.put("/delete", Auth, async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.password || !req.body._id)
     return res.status(400).send("Error: Incomplete data");
 
-  const role = await Role.findOne({ name: "client" });
+  const role = await Role.findOne({ name: "Client" });
   if (!role) return res.status(400).send("Error: Invalid Role id");
 
   const hash = await bcrypt.hash(req.body.password, 9);
@@ -104,7 +103,7 @@ router.put("/delete", async (req, res) => {
       password: hash,
       role: role._id,
       active: false,
-      profile: String,
+      profile: req.body.profile,
     },
     { new: true }
   );
