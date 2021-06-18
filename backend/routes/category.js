@@ -8,7 +8,7 @@ const checkRole = require("../middleware/role");
 router.post(
   "/create",
   Auth,
-  checkRole("ADMIN", "Provider", "Employee"),
+  checkRole("ADMIN", "Employee"),
   async (req, res) => {
     if (!req.body.name || !req.body.description)
       return res.status(400).send("Error: Incomplete data.");

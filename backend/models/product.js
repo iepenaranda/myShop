@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema({
   price: Number,
   stock: Number,
   provider: { type: mongoose.Schema.ObjectId, ref: "users" },
-  active: Boolean,
+  active: {type: Boolean, default: true},
 });
 
 const Product = mongoose.model("products", productSchema);
