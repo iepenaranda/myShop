@@ -4,15 +4,15 @@ const mongoose = require("mongoose");
 const Category = require("../models/category");
 const Auth = require("../middleware/auth");
 const checkRole = require("../middleware/role");
+const checkData = require("../middleware/checkData");
+const Schema = require("../schema/category");
 
 router.post(
   "/create",
+  checkData(Schema.create),
   Auth,
   checkRole("ADMIN", "Employee"),
   async (req, res) => {
-    if (!req.body.name || !req.body.description)
-      return res.status(400).send("Error: Incomplete data.");
-
     let category = await Category.findOne({ name: req.body.name });
     if (category)
       return res.status(400).send("Error: the category already exist.");
@@ -22,23 +22,17 @@ router.post(
       description: req.body.description,
     });
 
-    try {
-      const result = category.save();
-      if (!result)
-        return res.status(401).send("Error: Could not register cateogry.");
+    const result = await category.save();
+    if (!result)
+      return res.status(401).send("Error: Could not register cateogry.");
 
-      return res
-        .status(200)
-        .send({ message: "Category registered successfully.", data: category });
-    } catch (error) {
-      return res
-        .status(401)
-        .send("Error: Could not register cateogry: ", error);
-    }
+    return res
+      .status(200)
+      .send({ message: "Category registered successfully.", data: category });
   }
 );
 
-router.get("/list/:name?", async (req, res) => {
+router.get("/list/:name?", Auth, async (req, res) => {
   const category = await Category.find({
     name: new RegExp(req.params.name, "i"),
   }).exec();
@@ -53,12 +47,10 @@ router.get("/list/:name?", async (req, res) => {
 
 router.put(
   "/update",
+  checkData(Schema.update),
   Auth,
   checkRole("ADMIN", "Employee"),
   async (req, res) => {
-    if (!req.body.name || !req.body.description || !req.body._id)
-      return res.status(400).send("Error: Incomplete data.");
-
     const validId = mongoose.Types.ObjectId.isValid(req.body._id);
     if (!validId) return res.status(400).send("Error: Invalid id");
 
@@ -67,12 +59,14 @@ router.put(
       {
         name: req.body.name,
         description: req.body.description,
+        active: true,
       },
       { new: true }
     );
 
     if (!category)
       return res.status(401).send("Error: Could not update the cateogry.");
+
     return res
       .status(200)
       .send({ message: "Category updated successfully", data: category });
@@ -81,23 +75,18 @@ router.put(
 
 router.put(
   "/delete",
+  checkData(Schema.update),
   Auth,
   checkRole("ADMIN", "Employee"),
   async (req, res) => {
-    if (!req.body.name || !req.body.description || !req.body._id)
-      return res.status(400).send("Error: Incomplete data.");
-
     const validId = mongoose.Types.ObjectId.isValid(req.body._id);
     if (!validId) return res.status(400).send("Error: Invalid id");
 
-    const category = await Category.findByIdAndUpdate(
-      req.body._id,
-      {
-        name: req.body.name,
-        description: req.body.description,
-        active: false,
-      }
-    );
+    const category = await Category.findByIdAndUpdate(req.body._id, {
+      name: req.body.name,
+      description: req.body.description,
+      active: false,
+    });
 
     if (!category)
       return res.status(401).send("Error: Could not delete the cateogry.");

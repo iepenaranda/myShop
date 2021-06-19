@@ -7,6 +7,7 @@ const Role = require("../models/role");
 const Auth = require("../middleware/auth");
 const Schema = require("../schema/user");
 const checkData = require("../middleware/checkData");
+const checkRole = require("../middleware/role");
 
 router.post("/register", checkData(Schema.create), async (req, res) => {
   const email = await User.findOne({ email: req.body.email });
