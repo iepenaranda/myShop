@@ -5,9 +5,9 @@ const checkRole = (...roles) => {
     try {
       const roleUser = await Role.findById(req.user.role);
 
-      if (!roles.includes(roleUser.name))
+      if (!roles.includes(roleUser.name) || roleUser.name == "ADMIN")
         return res
-          .status(400)
+          .status(401)
           .send("Error: you do not have permisson to do this action.");
 
       next();

@@ -6,7 +6,7 @@ const create = Joi.object({
   price: Joi.number().required(),
   stock: Joi.number().required(),
   provider: Joi.string().required(),
-});
+}).required();
 
 const update = Joi.object({
   _id: Joi.string().required(),
@@ -15,6 +15,6 @@ const update = Joi.object({
   price: Joi.number().required(),
   stock: Joi.number().required(),
   provider: Joi.string().required(),
-});
+}).required();
 
 module.exports = { create, update };
